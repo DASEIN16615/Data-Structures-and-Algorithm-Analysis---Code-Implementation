@@ -1,0 +1,175 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+//求解最大子序列和
+
+void textbookway4(const A[],int N);
+void my_solution(int *a,int n);
+void textbookway1(const int A[],int N);
+void textbookway2(const int A[],int N);
+int textbookway3(const int A[],int Left,int Right);
+int Max3(int a,int b,int c);
+int  sort_1(const A[],int N);
+
+int main()
+{
+      int n;
+      printf("please input the length of the array\n");
+      scanf("%d",&n);
+      int a[n];
+      printf("please input the array\n");
+      for(int i=0;i<n;i++)
+      {
+          scanf("%d",&a[i]);
+      }
+      my_solution(a,n);
+      textbookway1(a,n);
+      textbookway2(a,n);
+      int outcome=sort_1(a,n);
+      printf("textbook solution3 is %d",outcome);
+      void textbookway4(a,n);
+      return 0;
+}
+
+
+
+void my_solution(int *a,int n)//has a proplem
+{
+    int max[n];
+    for(int i=0;i<n;i++)
+    {
+        max[i]=0;
+    }
+    int k = 0;
+    int sum=0;
+    for(int i=0;i<n;i++)
+    {
+       while(k<n)
+       {
+       for(int j=i;j<=k;j++)
+          sum+=*(a+j);
+       if(sum>max[i])
+          max[i]=sum;
+       k++;
+       sum=0;
+       }
+    }
+    for(int i=0;i<n;i++)//冒泡排序寻找max数列中的最大值
+    {
+        if(max[i]<max[i+1])
+        {
+            int temp=max[i];
+            max[i]=max[i+1];
+            max[i+1]=temp;
+        }
+    }
+    printf("my_solution is %d\n",max[0]);
+}
+
+
+
+void textbookway1(const int A[],int N)
+{
+    int ThisSum,MaxSum,i,j,k;
+    MaxSum=0;
+    for(i=0;i<N;i++)
+    {
+
+        for(j=i;j<N;j++)
+        {
+            ThisSum=0;
+            for(k=i;k<=j;k++)
+                ThisSum+=A[k];
+            if(ThisSum>MaxSum)
+                MaxSum=ThisSum;
+        }
+    }
+    printf("textbook solution1 is %d\n",MaxSum);
+}
+
+
+
+void textbookway2(const int A[],int N)
+{
+    int ThisSum,MaxSum,i,j;
+    MaxSum=0;
+    for(i=0;i<N;i++)
+    {
+        ThisSum=0;
+        for(j=i;j<N;j++)
+        {
+            ThisSum+=A[j];
+            if(ThisSum>MaxSum)
+                MaxSum=ThisSum;
+        }
+    }
+    printf("textbook solution2 is %d\n",MaxSum);
+}
+
+
+
+int textbookway3(const int A[],int Left,int Right)//分治策略（divide-and-conquer）
+{
+    int MaxLeftSum,MaxRightSum;
+    int MaxLeftBorderSum,MaxRightBorderSum;
+    int LeftBorderSum,RightBorderSum;
+    int Center,i;
+    if(Left==Right)
+        if(A[Left]>0)
+            return A[Left];
+        else
+            return 0;
+        Center=(Left+Right)/2;
+        MaxLeftSum=textbookway3(A,Left,Center);
+        MaxRightSum=textbookway3(A,Center+1,Right);
+        MaxLeftBorderSum=0;
+        LeftBorderSum=0;
+        for(i=Center;i>=Left;i--)
+        {
+            LeftBorderSum+=A[i];
+            if(LeftBorderSum>MaxLeftBorderSum)
+                MaxLeftBorderSum=LeftBorderSum;
+        }
+        MaxRightBorderSum=0;
+        RightBorderSum=0;
+        for(i=Center+1;i<=Right;i++)
+        {
+            RightBorderSum+=A[i];
+            if(RightBorderSum>MaxRightBorderSum)
+                MaxRightBorderSum=RightBorderSum;
+        }
+        return Max3(MaxLeftSum,MaxRightSum,MaxLeftBorderSum+MaxRightBorderSum);
+}
+
+
+
+int Max3(int a,int b,int c)
+{
+    int max;
+    max=a>b?a:b;
+    max=max>c?max:c;
+        return max;
+}
+
+
+
+int  sort_1(const A[],int N)
+{
+    return textbookway3(A,0,N-1);
+}
+
+
+
+void textbookway4(const A[],int N)
+{
+    int ThisSum,MaxSum,j;
+    ThisSum=MaxSum=0;
+    for(j=0;j<N;j++)
+    {
+        if(ThisSum>MaxSum)
+            MaxSum=ThisSum;
+        else if(ThisSum<0)
+            ThisSum=0;
+    }
+    printf("testbook solution4 is %d",MaxSum);
+}
