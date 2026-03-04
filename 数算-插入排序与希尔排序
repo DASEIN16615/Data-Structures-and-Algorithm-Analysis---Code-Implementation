@@ -1,0 +1,90 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+//算法-排序
+void array_print(int *a,int n);
+
+void my_insertion_sort(int*a,int n);
+
+void InsertionSort(int *a,int n);
+void Shellsort(int*a,int n);
+
+int main()
+{
+      int n;
+     printf("please input length of the array\n");
+     scanf("%d",&n);
+     printf("please input the array\n");
+     int a[n];
+     for(int i=0;i<n;i++)
+     {
+         scanf("%d",&a[i]);
+     }
+     my_insertion_sort(a,n);
+     InsertionSort(a,n);
+     Shellsort(a,n);
+      return 0;
+}
+void my_insertion_sort(int*a,int n)
+{
+    for(int i=0;i<n;i++)
+    {
+        for(int j=i-1;j>=0;j--)
+        {
+            if(a[i]<a[j])
+            {
+                int temp=a[i];
+                for(int k=i;k>j;k--)
+                {
+                    a[k]=a[k-1];
+                }
+                a[j]=temp;
+
+            }
+        }
+    }
+    array_print(a,n);
+}
+void InsertionSort(int *a,int n)
+{
+    int j,p;
+    int temp;
+    for(p=1;p<n;p++)
+    {
+        temp=a[p];
+        for(j=p;j>0&&a[j-1]>temp;j--)//合并了两步
+            a[j]=a[j-1];
+        a[j]=temp;
+    }
+    array_print(a,n);
+}
+
+void array_print(int *a,int n)
+{
+    for(int i=0;i<n;i++)
+        printf("%3d",*(a+i));
+    printf("\n");
+}
+void my_Shellsort(int *a,int n)
+{
+        
+}
+void Shellsort(int*a,int n)
+{
+    int i,j,increment;
+    int temp;
+    for(increment=n/2;increment>0;increment/=2)
+    {
+        for(i=increment;i<n;i++)
+        {
+            temp=a[i];
+            for(j=i;j>=increment;j-=increment)
+                if(temp<a[j-increment])
+                a[j]=a[j-increment];
+            else
+                break;
+                a[j]=temp;
+        }
+    }
+    array_print(a,n);
+}
