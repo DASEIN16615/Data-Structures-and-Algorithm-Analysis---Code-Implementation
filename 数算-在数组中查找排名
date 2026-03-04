@@ -1,0 +1,52 @@
+#include<stdio.h>
+
+void array_print(int n,int a[]);
+void swap(int *a,int *b);
+
+int main ()
+{
+    int k=0,n=0;
+    printf("请输入数组长度\n");
+    scanf("%d",&n);
+    int a[n];
+    printf("请输入要查询的排名\n");
+    scanf("%d",&k);
+    printf("请输入数组\n");
+    int s[k];
+    for(int i=0;i<k;i++)
+    s[i]=0;
+    for (int i = 0; i < n; i++)  // 开始排序
+    {
+        scanf("%d", &a[i]);  // 接收数组元素
+        for (int j=0;j<k; j++)
+        {
+            if(a[i]>s[j])
+            {
+                for (int m=k-1;m>j;m--)
+                {
+                    s[m]=s[m - 1];
+                }
+                s[j]=a[i];
+                break;
+            }
+        }
+    }
+    printf("%d\n",*(s+k-1));
+    array_print(k,s);
+    return 0;
+}
+
+
+void array_print(int n,int a[])//数组打印
+{
+    for(int i=0;i<n;i++)
+    {
+        printf("%3d",a[i]);
+    }
+}
+void swap(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
