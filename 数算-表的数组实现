@@ -1,0 +1,168 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+/*1. 实现一个表的数据结构，
+可以进行插入、删除、查找、判空、获取大小等操作。
+2. 底层使用数组储存
+*/
+#define SIZE 100
+//函数原型声明
+struct List* createList();//创建一个新的表，返回指向该表的指针
+void insertFirst(struct List* p, int x);//在表头插入元素x
+void insertLast(struct List* p, int x);//在表尾插入元素x
+int  find(struct List* p, int x);//查找元素x在表中的位置，返回位置索引，如果不存在返回-1
+int  findKth(struct List* p, int x);//查找表中第k个元素，返回元素值，如果不存在返回-1
+void delete(struct List* p, int x);//删除表中元素x
+bool isEmpty(struct List* p);//判断表是否为空
+int size(struct List* p);//获取表的大小，即表中元素的个数
+void printList(struct List* p);//打印表中的元素
+//用于储存表的数据结构
+struct List
+{
+      int elements[SIZE];//表的元素储存在数组中
+      int length;//表中元素的长度，实际储存的有效数据的个数
+};
+int main()
+{
+      int index;
+      int element;
+      struct List* list = createList();
+      printf("List is Empty: %d\n", isEmpty(list) );
+      printf("---------------------------------\n");
+
+      //在表头插入元素1和2
+      insertFirst(list, 1);
+      insertFirst(list, 2);
+
+      printList(list);
+      printf("---------------------------------\n");
+
+      printf("List is Empty?\n");
+      printf("%d\n",isEmpty(list));
+      printf("---------------------------------\n");
+
+      //在表尾插入元素3和4
+      insertLast(list, 3);
+      insertLast(list, 4);
+
+      printList(list);
+      printf("---------------------------------\n");
+
+      //查找元素3在表中的位置
+      index = find(list, 3);
+      if (index != -1)
+      {
+          printf("Element 3 found at index: %d\n", index);
+      }
+      else
+      {
+          printf("Element 3 not found in the list.\n");
+       }
+      printf("---------------------------------\n");
+
+      //查找表中第2个元素，返回元素的值
+      element = findKth(list, 2);
+      printf("find elemment : %d\n", element);
+      printf("---------------------------------\n");
+
+      //删除表中的元素3
+      delete(list, 3);
+      printList(list);
+      printf("---------------------------------\n");
+
+      //获取表的大小
+      printf("Size of the list: %d\n", size(list));
+      printf("---------------------------------\n");
+      return 0;
+}
+
+struct List* createList()
+{
+    struct List* newList = (struct List*)malloc(sizeof(struct List));
+    newList->length = 0; // 初始化长度为0
+    return newList;
+}
+
+void insertFirst(struct List* p, int x)//在表头插入元素x
+{
+    if (p->length >= SIZE) {
+        printf("List is full. Cannot insert element %d.\n", x);
+        return;
+    }
+    // 将现有元素向后移动一位
+    for (int i = p->length; i > 0; i--) {
+        p->elements[i] = p->elements[i - 1];
+    }
+    p->elements[0] = x; // 在表头插入新元素
+    p->length++; // 更新长度
+}
+
+void insertLast(struct List* p, int x)//在表尾插入元素x
+{
+    if (p->length >= SIZE) {
+        printf("List is full. Cannot insert element %d.\n", x);
+        return;
+    }
+    p->elements[p->length] = x; // 在表尾插入新元素
+    p->length++; // 更新长度
+}
+
+int  find(struct List* p, int x)//查找元素x在表中的位置，返回位置索引，如果不存在返回-1
+{
+    for (int i = 0; i < p->length; i++) {
+        if (p->elements[i] == x) {
+            return i; // 返回元素x的索引位置
+        }
+    }
+    return -1; // 元素x不存在于表中
+}
+
+int  findKth(struct List* p, int x)//查找表中第k个元素，返回元素值，如果不存在返回-1
+{
+    int position=x;
+    if(position <= 0)
+    {
+        printf("Position should be greater than 0.\n");
+        exit(1);
+    }
+    if (position > p->length) {
+        printf("Position exceeds the number of elements in the list.\n");
+        return -1; // 位置超过表中元素的个数
+    }
+    return p->elements[position - 1]; // 返回第k个元素的值，注意数组索引从0开始
+}
+
+void delete(struct List* p, int x)//删除表中元素x
+{
+    int i;
+    for(i=0;i<p->length;i++)
+    {
+        if(p->elements[i] == x)
+        {
+            for(;i<p->length-1;i++)
+            {
+                p->elements[i] = p->elements[i+1];//将后续元素向前移动一位覆盖被删除的元素
+            }
+            p->length--;//更新长度
+            break;
+        }
+    }
+}
+
+bool isEmpty(struct List* p)//判断表是否为空
+{
+    return p->length == 0; // 如果长度为0，则表为空
+}
+int size(struct List* p)//获取表的大小，即表中元素的个数
+{
+    return p->length;
+}
+
+void printList(struct List* p)//打印表中的元素
+{
+    printf("List elements: ");
+    for (int i = 0; i < p->length; i++) {
+        printf("%d ", p->elements[i]);
+    }
+    printf("\n");
+}
