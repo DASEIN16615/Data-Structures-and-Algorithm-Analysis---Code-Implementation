@@ -1,0 +1,162 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+//表的应用实例-多项式ADT及其运算
+#define  MaxDegree 10
+
+typedef struct
+{
+    int CoeffArray[MaxDegree+1]; //每一项的系数
+    int HighPower; //最高的次数
+}Polynomial;
+
+// 函数声明
+void ZeroPolynomial(Polynomial *Poly);
+void AddPolynomial(const Polynomial *Poly1, const Polynomial *Poly2, Polynomial *PolySum);
+void MultPolynomial(const Polynomial *Poly1, const Polynomial *Poly2, Polynomial *PolyProd);
+
+int main()
+{
+    Polynomial poly1, poly2, polySum, polyProd;
+
+    // 初始化多项式
+    ZeroPolynomial(&poly1);
+    ZeroPolynomial(&poly2);
+    ZeroPolynomial(&polySum);
+    ZeroPolynomial(&polyProd);
+
+    // 给poly1赋值: 2x^3 + 3x^2 + 4x + 5
+    poly1.HighPower = 3;
+    poly1.CoeffArray[3] = 2;
+    poly1.CoeffArray[2] = 3;
+    poly1.CoeffArray[1] = 4;
+    poly1.CoeffArray[0] = 5;
+
+    // 给poly2赋值: x^2 + 2x + 3
+    poly2.HighPower = 2;
+    poly2.CoeffArray[2] = 1;
+    poly2.CoeffArray[1] = 2;
+    poly2.CoeffArray[0] = 3;
+
+    // 打印原始多项式
+    printf("Polynomial 1 : ");
+    for (int i = poly1.HighPower; i >= 0; i--) {
+        if (poly1.CoeffArray[i] != 0) {
+            if (i == 0) {
+                printf("%d", poly1.CoeffArray[i]);
+            } else if (i == 1) {
+                printf("%dx", poly1.CoeffArray[i]);
+            } else {
+                printf("%dx^%d", poly1.CoeffArray[i], i);
+            }
+            if (i > 0 && poly1.CoeffArray[i-1] != 0) {
+                printf(" + ");
+            }
+        }
+    }
+    printf("\n");
+
+    printf("Polynomial 2 : ");
+    for (int i = poly2.HighPower; i >= 0; i--) {
+        if (poly2.CoeffArray[i] != 0) {
+            if (i == 0) {
+                printf("%d", poly2.CoeffArray[i]);
+            } else if (i == 1) {
+                printf("%dx", poly2.CoeffArray[i]);
+            } else {
+                printf("%dx^%d", poly2.CoeffArray[i], i);
+            }
+            if (i > 0 && poly2.CoeffArray[i-1] != 0) {
+                printf(" + ");
+            }
+        }
+    }
+    printf("\n");
+
+    // 计算多项式和
+    AddPolynomial(&poly1, &poly2, &polySum);
+
+    // 打印和
+    printf("Polynomial 1 + Polynomial 2 : ");
+    for (int i = polySum.HighPower; i >= 0; i--) {
+        if (polySum.CoeffArray[i] != 0) {
+            if (i == 0) {
+                printf("%d", polySum.CoeffArray[i]);
+            } else if (i == 1) {
+                printf("%dx", polySum.CoeffArray[i]);
+            } else {
+                printf("%dx^%d", polySum.CoeffArray[i], i);
+            }
+            if (i > 0 && polySum.CoeffArray[i-1] != 0) {
+                printf(" + ");
+            }
+        }
+    }
+    printf("\n");
+
+    // 计算多项式积
+    MultPolynomial(&poly1, &poly2, &polyProd);
+
+    // 打印积
+    printf("Polynomial 1 * Polynomial 2 : ");
+    for (int i = polyProd.HighPower; i >= 0; i--) {
+        if (polyProd.CoeffArray[i] != 0) {
+            if (i == 0) {
+                printf("%d", polyProd.CoeffArray[i]);
+            } else if (i == 1) {
+                printf("%dx", polyProd.CoeffArray[i]);
+            } else {
+                printf("%dx^%d", polyProd.CoeffArray[i], i);
+            }
+            if (i > 0 && polyProd.CoeffArray[i-1] != 0) {
+                printf(" + ");
+            }
+        }
+    }
+    printf("\n");
+
+    return 0;
+}
+
+void ZeroPolynomial(Polynomial *Poly) //多项式初始化为零
+{
+    int i;
+    for(i=0;i<=MaxDegree;i++)
+        Poly->CoeffArray[i]=0;
+    Poly->HighPower=0;
+}
+
+void AddPolynomial(const Polynomial *Poly1, const Polynomial *Poly2, Polynomial *PolySum) //多项式相加
+{
+    int i;
+    ZeroPolynomial(PolySum);
+    PolySum->HighPower=Max(Poly1->HighPower,Poly2->HighPower);
+    for(i=PolySum->HighPower;i>=0;i--)
+        PolySum->CoeffArray[i]=Poly1->CoeffArray[i]+Poly2->CoeffArray[i];
+}
+
+int Max(int a,int b)
+{
+    if(a>b)
+        return a;
+    else
+        return b;
+}
+
+void MultPolynomial(const Polynomial *Poly1, const Polynomial *Poly2, Polynomial *PolyProd)
+{
+    int i,j;
+    ZeroPolynomial(PolyProd);
+    PolyProd->HighPower=Poly1->HighPower+Poly2->HighPower;
+    if(PolyProd->HighPower>MaxDegree)
+    {
+        printf("Error: Exceed array size\n");
+        return;
+    }
+    else
+    {
+        for(i=0;i<=Poly1->HighPower;i++)
+            for(j=0;j<=Poly2->HighPower;j++)
+                PolyProd->CoeffArray[i+j]+=Poly1->CoeffArray[i]*Poly2->CoeffArray[j];
+    }
+}
