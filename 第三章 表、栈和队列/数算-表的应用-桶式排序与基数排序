@@ -1,1 +1,150 @@
+#include<stdio.h>
+#include<stdlib.h>
 
+/*
+桶式排序 bucket sort
+基数排序 radix sort
+*/
+
+void insertionSort(int arr[], int n);
+void bucketSort(int arr[], int n);
+void array_print(int a[], int n);
+int getDigit(int num, int exp);
+void countSort(int arr[], int n, int exp);
+void radixSort(int arr[], int n);
+void array_print(int a[], int n);
+
+int main()
+{
+    int n;
+    scanf("%d", &n);
+    int a[n], b[n];
+    for (int i = 0; i < n; i++)
+    {
+        scanf("%d", &a[i]);
+        b[i] = a[i];
+    }
+
+    printf("initial array: ");
+    array_print(a, n);
+    printf("\n");
+
+    bucketSort(a, n);
+
+    printf("The result of bucket sort: ");
+    array_print(a, n);
+    printf("\n");
+
+    radixSort(b, n);
+
+    printf("The result of radix sort: ");
+    array_print(b, n);
+    printf("\n");
+
+    return 0;
+}
+
+// 插入排序函数（用于桶内排序）
+void insertionSort(int arr[], int n)
+{
+    int i, j, key;
+    for (i=1;i<n;i++)
+   {
+        key=arr[i];
+        j=i-1;
+        while (j>=0&&arr[j]>key)
+        {
+            arr[j+1]=arr[j];
+            j--;
+        }
+        arr[j+1]=key;
+    }
+}
+
+// 桶排序主函数（使用C99变长数组）
+void bucketSort(int arr[], int n)
+{
+    // 找到数组中的最小值和最大值
+    int min_val=arr[0];
+    int max_val=arr[0];
+    for (int i=1; i<n;i++)
+    {
+        if (arr[i]<min_val)
+           min_val = arr[i];
+        if (arr[i] > max_val)
+           max_val = arr[i];
+    }
+    // 计算桶的数量（确保数据均匀分布）
+    int bucketCount=(max_val-min_val+1)/n+1;
+    // 使用C99变长数组创建桶
+    int buckets[bucketCount][n];
+    int bucketSizes[bucketCount];
+    for(int y=0;y<bucketCount;y++)//初始化
+        bucketSizes[y]=0;
+    // 将元素分配到桶中
+    for (int i = 0; i < n; i++) //important
+    {
+        int index=(arr[i]-min_val)/n;
+        if (index>=bucketCount)
+           index=bucketCount-1;
+        buckets[index][bucketSizes[index]++] = arr[i];
+    }
+    // 对每个桶进行排序
+    for (int i = 0; i < bucketCount; i++) {
+        if (bucketSizes[i] > 0) {
+            insertionSort(buckets[i], bucketSizes[i]);
+        }
+    }
+    // 合并所有桶的元素
+    int index = 0;
+    for (int i = 0; i < bucketCount; i++) {
+        for (int j = 0; j < bucketSizes[i]; j++) {
+            arr[index++] = buckets[i][j];
+        }
+    }
+}
+
+int getDigit(int num, int exp) // 获取数字指定位的数字（0-9）
+{
+    return (num / exp) % 10;
+}
+
+void countSort(int arr[], int n, int exp) // 计数排序（基数排序子程序）
+{
+    int output[n];       // 输出数组
+    int count[10] = {0}; // 计数数组（0-9）
+    for (int i = 0; i < n; i++)  // 统计当前位数字出现次数
+        count[getDigit(arr[i], exp)]++;
+    for (int i = 1; i < 10; i++)// 计算累计分布（确定元素位置）
+        count[i] += count[i - 1];
+    for (int i = n - 1; i >= 0; i--)// 从后向前构建输出数组（保证稳定性）
+    {
+        int digit = getDigit(arr[i], exp);
+        output[count[digit] - 1] = arr[i];
+        count[digit]--;
+    }
+    for (int i = 0; i < n; i++)  // 将排序结果复制回原数组
+        arr[i] = output[i];
+}
+
+void radixSort(int arr[], int n) // 基数排序主函数
+{
+    int max_val = arr[0];    // 找到数组中的最大值
+    for (int i = 1; i < n; i++)
+        if (arr[i] > max_val)
+            max_val = arr[i];//记录数组中的最大值的位数为最高有效位
+    int exp = 1; // 对每一位进行计数排序
+    while (max_val / exp > 0)
+    {
+        countSort(arr, n, exp);
+        exp *= 10;
+    }
+}
+
+void array_print(int a[], int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d ", a[i]);
+    }
+}
