@@ -2,7 +2,7 @@
 #include<stdlib.h>//malloc
 #include<stdbool.h>
 
-//先定义结构体，再定义类型别名
+// 修正1: 先定义结构体，再定义类型别名
 typedef struct Node {
     int element;
     struct Node *next;
@@ -27,10 +27,16 @@ int main()
     }
 
     // 测试 push 和 top
-    push(1, S);
-    push(2, S);
-    push(3, S);
-    printf("push 1,2,3.\n");
+    printf("Please enter the number of items you want to push onto the stack\n");
+    int n;
+    scanf("%d",&n);
+    int a[n];
+    printf("please input what you want to push onto the stack:\n");
+    for(int i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+        push(a[i],S);
+    }
     printf("--------------------------------------\n");
      // 测试 disposeStack
     disposeStack(S);
