@@ -1,0 +1,129 @@
+#include<stdio.h>
+#include<stdlib.h>//malloc
+#include<stdbool.h>
+
+//先定义结构体，再定义类型别名
+typedef struct Node {
+    int element;
+    struct Node *next;
+} Stack;
+
+// 函数声明（全部使用Stack*，确保类型一致）
+bool isEmpty(Stack *s);
+Stack* createStack(void);
+void disposeStack(Stack *S);
+void makeEmpty(Stack *S);
+int top(Stack *S);
+void pop(Stack *S);
+void push(int x, Stack *S);
+
+int main()
+{
+    // 测试栈功能
+    Stack *S = createStack();
+    if (S == NULL) {
+        printf("Failed to create stack\n");
+        return 1;
+    }
+
+    // 测试 push 和 top
+    push(1, S);
+    push(2, S);
+    push(3, S);
+    printf("push 1,2,3.\n");
+    printf("--------------------------------------\n");
+     // 测试 disposeStack
+    disposeStack(S);
+    printf("Top element: %d\n", top(S));
+    printf("--------------------------------------\n");
+    // 测试 pop
+    pop(S);
+    printf("After pop, top element: %d\n", top(S));
+    pop(S);
+    printf("After pop, top element: %d\n", top(S));
+    printf("--------------------------------------\n");
+    // 测试空栈
+    pop(S);
+    printf("Stack empty? %s\n", isEmpty(S) ? "true" : "false");
+    printf("--------------------------------------\n");
+    // 测试空栈 pop
+    pop(S);
+    printf("--------------------------------------\n");
+    // 释放栈内存
+    free(S);
+    return 0;
+}
+
+bool isEmpty(Stack *s)
+{
+    return s->next == NULL;
+}
+
+Stack* createStack(void)
+{
+    Stack *S = malloc(sizeof(struct Node));
+    if (S == NULL)
+    {
+        printf("out of space");
+        return NULL;
+    }
+    S->next = NULL;
+    return S;
+}
+
+void makeEmpty(Stack *S)
+{
+    if (S == NULL)
+        printf("must use CreateStack first");
+    else
+        while (!isEmpty(S))
+            pop(S);
+}
+
+void push(int x, Stack *S)
+{
+    struct Node *tmp;
+    tmp = malloc(sizeof(struct Node));
+    if (tmp == NULL)
+    {
+        printf("out of space");
+        return;
+    }
+    tmp->element = x;
+    tmp->next = S->next;
+    S->next = tmp;
+}
+
+int top(Stack *S)
+{
+    if (!isEmpty(S))
+    {
+        return S->next->element;
+    }
+    printf("empty stack\n");
+    return 0;
+}
+
+void pop(Stack *S)
+{
+    struct Node *tmp;
+    if (isEmpty(S))
+    {
+        printf("empty stack\n");
+        return;
+    }
+    tmp = S->next;
+    S->next = S->next->next;
+    free(tmp);
+}
+
+void disposeStack(Stack *S)
+{
+    struct Node *tmp;
+    tmp = S->next;
+    while (tmp != NULL)
+    {
+        printf("element is:%d\n", tmp->element);
+        tmp = tmp->next;
+    }
+}
