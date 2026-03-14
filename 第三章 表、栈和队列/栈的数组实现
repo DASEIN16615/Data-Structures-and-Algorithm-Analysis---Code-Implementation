@@ -1,0 +1,175 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+//栈ADT的数组实现
+//函数原型声明与预处理命令
+#define  EmptyTOS -1
+#define MinStackSize 5
+
+struct Stack; // 前向声明
+
+// 函数原型声明
+struct Stack* createStack(int maxElements);
+bool isEmpty(struct Stack* s);
+bool isFull(struct Stack* s);
+void disposeStack(struct Stack *s); //释放栈的内存
+void makeEmpty(struct Stack *s);
+void push(int x, struct Stack *s);
+int top(struct Stack* s);
+void pop(struct Stack *s);
+int topandpop(struct Stack *s);
+void printStack(struct Stack* s); //打印栈
+
+// 栈的结构体定义
+struct Stack {
+    int topOfStack;  // 栈顶的角标，控制栈的有效数据的范围
+    int capacity;     // 栈的容量
+    int *array;       // 指针，指向一维数组首元素的地址
+};
+
+int main()
+{
+    int val;
+    struct Stack* s;
+    printf("you can push six element to the stack\n");
+    int x;
+    s = createStack(8);
+
+    // 压栈
+    for(int i=0;i<6;i++)
+    {
+        scanf("%d",&x);
+        push(x,s);
+    }
+
+    // 显示栈中元素的值
+    printStack(s);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+
+    // 查看栈顶元素的值
+    val = top(s);
+    printf("top val is:%d\n", val);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+
+    // 栈顶元素出栈
+    pop(s);
+    val = top(s);
+    printf("top val is %d\n", val);
+    printStack(s);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+
+    push(6, s);
+    push(7, s);
+    printStack(s);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+
+    // 清空栈
+    makeEmpty(s);
+    printf("stack isEmpty : %d\n", isEmpty(s));
+
+    disposeStack(s);
+
+    return 0;
+}
+
+struct Stack* createStack(int maxElements)
+{
+    struct Stack* s;
+    if(maxElements < MinStackSize)
+    {
+        printf("stack size is too small.\n");
+        return NULL;
+    }
+
+    s = malloc(sizeof(struct Stack));
+    if(s == NULL)
+    {
+        printf("out of space! \n");
+        return NULL;
+    }
+    s->array = malloc(sizeof(int) * maxElements);
+    if(s->array == NULL)
+    {
+        printf("out of space! \n");
+        return NULL;
+    }
+    s->topOfStack = EmptyTOS;
+    s->capacity = maxElements;
+    return s;
+}
+
+bool isEmpty(struct Stack* s)
+{
+    return s->topOfStack == EmptyTOS;
+}
+
+bool isFull(struct Stack* s)
+{
+    return s->topOfStack == s->capacity - 1;
+}
+
+void disposeStack(struct Stack *s) //释放栈的内存
+{
+    if(s != NULL)
+    {
+        free(s->array);
+        free(s);
+    }
+}
+
+void makeEmpty(struct Stack *s)
+{
+    s->topOfStack = EmptyTOS;
+}
+
+void push(int x, struct Stack *s)
+{
+    if(isFull(s))
+    {
+        printf("full stack.\n");
+        return;
+    }
+    else
+    {
+        s->array[++s->topOfStack] = x;
+    }
+}
+
+int top(struct Stack* s)
+{
+    if(!isEmpty(s))
+        return s->array[s->topOfStack];
+    printf("empty stack");
+    return 0;
+}
+
+void pop(struct Stack *s)
+{
+    if(isEmpty(s))
+    {
+        printf("empty stack\n");
+        return;
+    }
+    else
+    {
+        s->topOfStack--; // 正确弹出栈顶元素
+    }
+}
+
+int topandpop(struct Stack *s)
+{
+    if(!isEmpty(s))
+    {
+        return s->array[s->topOfStack--]; // 返回栈顶元素并弹出
+    }
+    printf("empty stack\n");
+    return 0;
+}
+
+void printStack(struct Stack* s) //打印栈
+{
+    int i;
+    for(i = 0; i <= s->topOfStack; i++)
+        printf("element is %d \n", s->array[i]);
+}
