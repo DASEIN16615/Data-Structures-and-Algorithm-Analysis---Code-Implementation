@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+// 定义栈结构
+typedef struct
+ {
+    char *data;
+    int top;
+    int capacity;//容量
+} Stack;
+
+// 初始化栈
+void initStack(Stack *s, int capacity)
+{
+    s->data = (char *)malloc(capacity * sizeof(char));
+    s->top = -1;
+    s->capacity = capacity;
+}
+
+// 检查栈是否为空
+bool isEmpty(Stack *s)
+{
+    return s->top == -1;
+}
+
+// 检查栈是否已满
+bool isFull(Stack *s)
+{
+    return s->top == s->capacity - 1;
+}
+
+// 将元素压入栈
+void push(Stack *s, char c)
+{
+    if (!isFull(s))
+    {
+        s->data[++s->top] = c;
+    }
+}
+
+// 从栈中弹出元素
+char pop(Stack *s)
+{
+    if (!isEmpty(s))
+    {
+        return s->data[s->top--];
+    }
+    return '\0'; // 栈为空时返回空字符
+}
+
+// 检查括号是否匹配
+bool isMatching(char open, char close) {
+    if (open == '(' && close == ')') return true;
+    if (open == '[' && close == ']') return true;
+    if (open == '{' && close == '}') return true;
+    return false;
+}
+
+// 检查字符串中的括号是否平衡
+bool isBalanced(char *str)
+ {
+    Stack s;
+    initStack(&s, strlen(str));
+    for (int i = 0; i < strlen(str); i++)
+        {
+
+           // 如果是左括号，压入栈
+           if (str[i] == '(' || str[i] == '[' || str[i] == '{')
+           {
+               push(&s, str[i]);
+           }
+           // 如果是右括号
+           else if (str[i] == ')' || str[i] == ']' || str[i] == '}')
+            {
+            // 如果栈为空，说明没有对应的左括号
+               if (isEmpty(&s))
+              {
+                   free(s.data);
+                   return false;
+               }
+
+            // 检查栈顶的左括号是否与当前右括号匹配
+            char top = pop(&s);
+            if (!isMatching(top, str[i])) {
+                free(s.data);
+                return false;
+            }
+        }
+    }
+
+    // 遍历结束后，栈应该为空
+    bool result = isEmpty(&s);
+    free(s.data);
+    return result;
+}
+
+int main()
+ {
+    char input[1000];
+
+    printf("please input the string what you want to detect:\n");
+    fgets(input, sizeof(input), stdin);
+
+    // 移除fgets添加的换行符
+    input[strcspn(input, "\n")] = '\0';
+
+    if (isBalanced(input))
+    {
+        printf("balance!\n");
+    }
+    else
+    {
+        printf("not balance!\n");
+    }
+
+    return 0;
+}
