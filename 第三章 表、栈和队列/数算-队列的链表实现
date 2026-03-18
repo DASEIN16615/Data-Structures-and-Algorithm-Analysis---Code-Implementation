@@ -1,0 +1,213 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+// 队列ADT的链表实现
+struct Queue* initQueue();
+bool isEmpty(struct Queue* q);
+void disposeQueue(struct Queue* q); // 释放队列内存空间
+void enqueue(int x, struct Queue* q); // 入队操作
+void dequeue(struct Queue* q); // 出队操作
+int front(struct Queue* q); // 获取队头元素
+void printQueue(struct Queue* q); // 打印队列内容
+
+// 队列节点结构体
+typedef struct QueueNode {
+    int data;          // 数据域：存储队列元素
+    struct QueueNode* next; // 指针域：指向下一个节点
+} QueueNode;
+
+// 队列结构体
+typedef struct Queue {
+    QueueNode* front;  // 队头指针（指向队头节点）
+    QueueNode* rear;   // 队尾指针（指向队尾节点）
+    int size;          // 队列中元素个数
+} Queue;
+
+int main()
+{
+    int val;
+    struct Queue* q;
+    
+    // 创建队列
+    q = initQueue();
+    printf("Created a new queue\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 测试队列是否为空
+    printf("Is the queue empty? %s\n", isEmpty(q) ? "Yes" : "No");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 入队操作（添加元素1-5）
+    enqueue(1, q);
+    printf("Enqueued 1\n");
+    enqueue(2, q);
+    printf("Enqueued 2\n");
+    enqueue(3, q);
+    printf("Enqueued 3\n");
+    enqueue(4, q);
+    printf("Enqueued 4\n");
+    enqueue(5, q);
+    printf("Enqueued 5\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 打印队列内容
+    printf("Current queue content:\n");
+    printQueue(q);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 获取队头元素
+    val = front(q);
+    printf("Front element: %d\n", val);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 出队操作（移除前两个元素）
+    dequeue(q);
+    printf("Dequeued the front element (1)\n");
+    dequeue(q);
+    printf("Dequeued the front element (2)\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 入队新元素
+    enqueue(9, q);
+    printf("Enqueued 9\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 打印队列内容
+    printf("Current queue content after dequeue and enqueue:\n");
+    printQueue(q);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 获取队头元素
+    val = front(q);
+    printf("Front element after operations: %d\n", val);
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 测试队列是否为空
+    printf("Is the queue empty? %s\n", isEmpty(q) ? "Yes" : "No");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    
+    // 释放队列内存
+    disposeQueue(q);
+    printf("Queue memory freed\n");
+    return 0;
+}
+
+// 初始化队列
+struct Queue* initQueue()
+{
+    struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
+    if(q == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        return NULL;
+    }
+    
+    q->front = NULL;  // 初始化队头指针为NULL
+    q->rear = NULL;   // 初始化队尾指针为NULL
+    q->size = 0;      // 初始化队列大小为0
+    return q;
+}
+
+// 检查队列是否为空
+bool isEmpty(struct Queue* q)
+{
+    return q->front == NULL;
+}
+
+// 释放队列内存空间
+void disposeQueue(struct Queue* q)
+{
+    // 释放队列中所有节点
+    QueueNode* current = q->front;
+    QueueNode* next;
+    
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    
+    free(q);
+}
+
+// 从队尾入队元素x
+void enqueue(int x, struct Queue* q)
+{
+    // 创建新节点
+    QueueNode* newNode = (QueueNode*)malloc(sizeof(QueueNode));
+    if(newNode == NULL)
+    {
+        printf("Memory allocation failed for new node!\n");
+        return;
+    }
+    
+    newNode->data = x;
+    newNode->next = NULL;
+    
+    // 如果队列为空，设置队头和队尾都指向新节点
+    if(isEmpty(q))
+    {
+        q->front = newNode;
+        q->rear = newNode;
+    }
+    else // 队列不为空，将新节点添加到队尾
+    {
+        q->rear->next = newNode;
+        q->rear = newNode;
+    }
+    
+    q->size++; // 增加队列大小
+}
+
+// 从队头出队
+void dequeue(struct Queue* q)
+{
+    if(isEmpty(q))
+    {
+        printf("Empty queue, cannot dequeue!\n");
+        return;
+    }
+    
+    // 保存队头节点
+    QueueNode* temp = q->front;
+    
+    // 更新队头指针
+    q->front = q->front->next;
+    
+    // 如果队列只剩一个元素，更新队尾指针
+    if(q->front == NULL)
+    {
+        q->rear = NULL;
+    }
+    
+    // 释放被移除的节点
+    free(temp);
+    q->size--; // 减少队列大小
+}
+
+// 获取队头元素（不移除）
+int front(struct Queue* q)
+{
+    if(isEmpty(q))
+    {
+        printf("Empty queue, no front element!\n");
+        return -1; // 返回错误值
+    }
+    else
+    {
+        return q->front->data;
+    }
+}
+
+// 打印队列内容
+void printQueue(struct Queue* q)
+{
+    QueueNode* current = q->front;
+    
+    while (current != NULL)
+    {
+        printf("element is:%d\n", current->data);
+        current = current->next;
+    }
+}
