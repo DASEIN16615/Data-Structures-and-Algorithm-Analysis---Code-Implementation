@@ -1,0 +1,329 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+
+// ======================
+// 树节点结构定义
+// ======================
+typedef struct TreeNode {
+    char *value;                // 节点值：操作数字符串 或 运算符字符
+    struct TreeNode *left;      // 左子树
+    struct TreeNode *right;     // 右子树
+} TreeNode;
+
+// 栈大小定义（足够处理常规表达式）
+#define MAX_STACK_SIZE 100
+#define MAX_TOKEN_LEN 50
+#define MAX_EXPR_LEN 512
+
+// ======================
+// 辅助函数声明
+// ======================
+TreeNode* createNode(const char *value);
+void freeTree(TreeNode *root);
+int precedence(char op);
+TreeNode* buildExpressionTree(const char *infix);
+void postorderTraversal(TreeNode *root, char *result, int *pos);
+double evaluateTree(TreeNode *root);
+void skipSpaces(const char *expr, int *index);
+int isOperator(char c);
+void handleOperator(char currOp, TreeNode **operandStack, int *topOperand, 
+                    char *opStack, int *topOp);
+void buildSubtree(TreeNode **operandStack, int *topOperand, char op);
+void processRemainingOperators(TreeNode **operandStack, int *topOperand, 
+                                char *opStack, int *topOp);
+
+// ======================
+// 创建树节点（深拷贝value）
+// ======================
+TreeNode* createNode(const char *value) {
+    TreeNode *node = (TreeNode*)malloc(sizeof(TreeNode));
+    if (!node) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    // 分配并复制字符串（确保节点拥有独立内存）
+    node->value = (char*)malloc(strlen(value) + 1);
+    if (!node->value) {
+        free(node);
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    strcpy(node->value, value);
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+// ======================
+// 释放整棵树的内存
+// ======================
+void freeTree(TreeNode *root) {
+    if (root == NULL) return;
+    freeTree(root->left);
+    freeTree(root->right);
+    free(root->value);
+    free(root);
+}
+
+// ======================
+// 运算符优先级（用于构建树）
+// ======================
+int precedence(char op) {
+    switch(op) {
+        case '+':
+        case '-': return 1;  // 低优先级
+        case '*':
+        case '/': return 2;  // 高优先级
+        default:  return 0;  // 括号或其他
+    }
+}
+
+// ======================
+// 判断字符是否为运算符
+// ======================
+int isOperator(char c) {
+    return c == '+' || c == '-' || c == '*' || c == '/';
+}
+
+// ======================
+// 跳过表达式中的空格
+// ======================
+void skipSpaces(const char *expr, int *index) {
+    while (expr[*index] == ' ') (*index)++;
+}
+
+// ======================
+// 构建子树：弹出两个操作数 + 一个运算符 -> 新节点
+// 注意：先弹出的是右操作数，后弹出的是左操作数
+// ======================
+void buildSubtree(TreeNode **operandStack, int *topOperand, char op) {
+    // 安全检查：确保栈中有足够操作数
+    if (*topOperand < 1) {
+        fprintf(stderr, "Error: Insufficient operands\n");
+        exit(1);
+    }
+    
+    // 创建新节点存储运算符
+    char opStr[2] = {op, '\0'};
+    TreeNode *node = createNode(opStr);
+    
+    // 弹出右操作数（后出现的操作数）
+    node->right = operandStack[(*topOperand)--];
+    // 弹出左操作数（先出现的操作数）
+    node->left = operandStack[(*topOperand)--];
+    
+    // 将新子树压回操作数栈
+    operandStack[++(*topOperand)] = node;
+}
+
+// ======================
+// 处理当前运算符：根据优先级弹出高/等优先级运算符
+// ======================
+void handleOperator(char currOp, TreeNode **operandStack, int *topOperand, 
+                    char *opStack, int *topOp) {
+    // 当栈顶运算符优先级 >= 当前运算符 且 不是左括号时，构建子树
+    while (*topOp >= 0 && opStack[*topOp] != '(' && 
+           precedence(opStack[*topOp]) >= precedence(currOp)) {
+        buildSubtree(operandStack, topOperand, opStack[(*topOp)--]);
+    }
+    // 压入当前运算符
+    opStack[++(*topOp)] = currOp;
+}
+
+// ======================
+// 处理剩余运算符（表达式结束时调用）
+// ======================
+void processRemainingOperators(TreeNode **operandStack, int *topOperand, 
+                                char *opStack, int *topOp) {
+    while (*topOp >= 0) {
+        if (opStack[*topOp] == '(') {
+            fprintf(stderr, "Error: Mismatched parentheses\n");
+            exit(1);
+        }
+        buildSubtree(operandStack, topOperand, opStack[(*topOp)--]);
+    }
+}
+
+// ======================
+// 核心：从中缀表达式构建表达式树
+// 使用双栈算法（操作数栈 + 运算符栈）
+// ======================
+TreeNode* buildExpressionTree(const char *infix) {
+    int len = strlen(infix);
+    int i = 0;
+    
+    // 初始化栈
+    TreeNode *operandStack[MAX_STACK_SIZE]; // 存储树节点
+    char opStack[MAX_STACK_SIZE];           // 存储运算符/括号
+    int topOperand = -1;  // 操作数栈顶
+    int topOp = -1;       // 运算符栈顶
+    
+    while (i < len) {
+        skipSpaces(infix, &i);
+        if (i >= len) break;
+        
+        char c = infix[i];
+        
+        // 情况1: 数字或小数点（操作数）
+        if (isdigit(c) || c == '.') {
+            char numStr[MAX_TOKEN_LEN] = {0};
+            int j = 0;
+            
+            // 提取完整数字（支持整数和小数）
+            while (i < len && (isdigit(infix[i]) || infix[i] == '.')) {
+                numStr[j++] = infix[i++];
+                if (j >= MAX_TOKEN_LEN - 1) break;
+            }
+            numStr[j] = '\0';
+            
+            // 创建叶子节点并压栈
+            operandStack[++topOperand] = createNode(numStr);
+            continue; // i已在循环中更新
+        }
+        
+        // 情况2: 左括号
+        if (c == '(') {
+            opStack[++topOp] = c;
+            i++;
+            continue;
+        }
+        
+        // 情况3: 右括号 -> 弹出直到左括号
+        if (c == ')') {
+            while (topOp >= 0 && opStack[topOp] != '(') {
+                buildSubtree(operandStack, &topOperand, opStack[topOp--]);
+            }
+            if (topOp < 0) {
+                fprintf(stderr, "Error: Mismatched parentheses\n");
+                return NULL;
+            }
+            topOp--; // 弹出左括号（丢弃）
+            i++;
+            continue;
+        }
+        
+        // 情况4: 运算符
+        if (isOperator(c)) {
+            handleOperator(c, operandStack, &topOperand, opStack, &topOp);
+            i++;
+            continue;
+        }
+        
+        // 无效字符
+        fprintf(stderr, "Error: Invalid character '%c'\n", c);
+        return NULL;
+    }
+    
+    // 处理剩余运算符
+    processRemainingOperators(operandStack, &topOperand, opStack, &topOp);
+    
+    // 最终栈中应只剩根节点
+    if (topOperand != 0 || topOp != -1) {
+        fprintf(stderr, "Error: Invalid expression syntax\n");
+        // 清理已分配内存（简化处理，实际应递归释放）
+        while (topOperand >= 0) freeTree(operandStack[topOperand--]);
+        return NULL;
+    }
+    
+    return operandStack[0]; // 返回根节点
+}
+
+// ======================
+// 后序遍历：生成后缀表达式（左 右 根）
+// ======================
+void postorderTraversal(TreeNode *root, char *result, int *pos) {
+    if (root == NULL) return;
+    
+    // 递归遍历左子树
+    postorderTraversal(root->left, result, pos);
+    // 递归遍历右子树
+    postorderTraversal(root->right, result, pos);
+    
+    // 访问根节点：追加值 + 空格
+    *pos += sprintf(result + *pos, "%s ", root->value);
+}
+
+// ======================
+// 递归计算表达式树的值
+// ======================
+double evaluateTree(TreeNode *root) {
+    // 叶子节点 = 操作数
+    if (root->left == NULL && root->right == NULL) {
+        return atof(root->value); // 字符串转浮点数
+    }
+    
+    // 递归计算左右子树
+    double leftVal = evaluateTree(root->left);
+    double rightVal = evaluateTree(root->right);
+    
+    // 根据运算符计算
+    switch(root->value[0]) {
+        case '+': return leftVal + rightVal;
+        case '-': return leftVal - rightVal;
+        case '*': return leftVal * rightVal;
+        case '/': 
+            if (fabs(rightVal) < 1e-10) {
+                fprintf(stderr, "Error: Division by zero\n");
+                exit(1);
+            }
+            return leftVal / rightVal;
+        default:
+            fprintf(stderr, "Error: Unknown operator '%s'\n", root->value);
+            exit(1);
+    }
+}
+
+// ======================
+// 主函数：用户交互 + 流程控制
+// ======================
+int main() {
+    char input[MAX_EXPR_LEN];
+    
+    // 用户输入提示（简单英文）
+    printf("Enter an infix expression (e.g., '3 + 4 * 2 / ( 1 - 5 )'): ");
+    if (fgets(input, sizeof(input), stdin) == NULL) {
+        fprintf(stderr, "Error reading input\n");
+        return 1;
+    }
+    
+    // 移除换行符
+    input[strcspn(input, "\n")] = '\0';
+    
+    // 构建表达式树
+    TreeNode *root = buildExpressionTree(input);
+    if (root == NULL) {
+        printf("Failed to parse expression. Please check syntax.\n");
+        return 1;
+    }
+    
+    // 生成后缀表达式
+    char postfix[MAX_EXPR_LEN * 2] = {0}; // 后缀可能更长
+    int pos = 0;
+    postorderTraversal(root, postfix, &pos);
+    
+    // 移除末尾多余空格
+    if (pos > 0 && postfix[pos - 1] == ' ') {
+        postfix[pos - 1] = '\0';
+    }
+    
+    // 计算结果
+    double result = evaluateTree(root);
+    
+    // 输出结果
+    printf("\n=== Result ===\n");
+    printf("Postfix expression: %s\n", postfix);
+    // 智能格式化：整数不显示小数部分
+    if (fabs(result - round(result)) < 1e-6) {
+        printf("Calculation result: %.0f\n", result);
+    } else {
+        printf("Calculation result: %.4f\n", result);
+    }
+    
+    // 释放内存
+    freeTree(root);
+    
+    return 0;
+}
