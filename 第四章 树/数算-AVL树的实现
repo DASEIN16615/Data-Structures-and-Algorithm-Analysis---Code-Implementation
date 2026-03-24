@@ -1,0 +1,310 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+/*
+AVL树代码实现
+*/ 
+int max(int a,int b)
+{
+    return a>b?a:b;
+}
+struct Tree* makeEmpty(struct Tree* t);//将树置空
+struct Tree* insert(int x,struct Tree* t);//插入函数
+struct Tree* delete(int x,struct Tree* t);//删除函数
+struct Tree* find(int x,struct Tree* t);//查找函数，找到返回指针，没找到返回NULL
+struct Tree* findMin(struct Tree* t);//找到最小值，返回指针
+struct Tree* findMax(struct Tree* t);//找到最大值，返回指针
+void printTree(struct Tree* t);//中序递归输出树中元素
+struct Tree* rotateWithLeftChild(struct Tree* k2);//单旋转函数
+struct Tree* rotateWithRightChild(struct Tree* k1);//单旋转函数
+struct Tree* doubleWithLeftChild(struct Tree* k3);//双旋转函数
+struct Tree* doubleWithRightChild(struct Tree* k1);//双旋转函数
+int height(struct Tree* t);//计算树的高度
+
+struct Tree
+{
+    int element;//key
+    struct Tree* left;
+    struct Tree* right;
+    int height;
+};
+
+int main()
+{
+    struct Tree* min;
+    struct Tree* max;
+    struct Tree* node;
+    struct Tree* root;
+
+    printf("Please input the number of keys to be inserted into the tree:\n");
+    int n;
+    scanf("%d",&n);
+    printf("Please input the keys to be inserted into the tree:\n");
+    for(int i=0;i<n;i++)
+    {
+        int x;
+        scanf("%d",&x);
+        if(i==0)
+        {
+            root=insert(x,NULL);
+        }
+        else
+        {
+        root=insert(x,root);
+        }
+    }
+    /*
+    root=insert(6,NULL);
+    insert(4,root);
+    insert(3,root);
+    insert(2,root);
+    insert(1,root);
+    insert(8,root);
+    */
+
+    printTree(root);
+    printf("------------------------------\n");
+
+    //查找key最小的节点
+    min=findMin(root);
+    printf("The minimum key is %d\n",min->element);
+    printf("------------------------------\n");
+
+    //查找key最大的节点
+    max=findMax(root);
+    printf("The maximum key is %d\n",max->element);
+    printf("------------------------------\n");
+
+    
+    //查找关键字为k的节点
+    int k;
+    printf("Please input the key to be searched:\n");
+    scanf("%d",&k);
+    node=find(k,root);
+    printf("The node with key %d is %d\n",k,node->element);
+    printf("------------------------------\n");
+
+    //删除节点
+    root=makeEmpty(root);
+    printTree(root);
+
+    return 0;
+}
+
+
+struct Tree* makeEmpty(struct Tree* t)
+{
+    if(t!=NULL)
+    {
+        makeEmpty(t->left);
+        makeEmpty(t->right);
+        free(t);
+    }
+    return NULL;
+}
+
+struct Tree* insert(int x, struct Tree* t)
+{
+    if(t == NULL)
+    {
+        t = malloc(sizeof(struct Tree));
+        if(t == NULL)
+        {
+            printf("Out of space!\n");
+            return NULL;
+        }
+        else
+        {
+            t->element = x;
+            t->left = NULL;
+            t->right = NULL;
+            t->height = 0;
+        }
+    }
+    else if(x < t->element)
+    {
+        t->left = insert(x, t->left);
+    }
+    else if(x > t->element)
+    {
+        t->right = insert(x, t->right);
+    }
+    
+    // 先更新高度
+    t->height = max(height(t->left), height(t->right)) + 1;
+    
+    // 再检查平衡
+    if(height(t->left) - height(t->right) > 1)
+    {
+        if(x < t->left->element)
+        {
+            t = rotateWithLeftChild(t);
+        }
+        else
+        {
+            t = doubleWithLeftChild(t);
+        }
+    }
+    else if(height(t->right) - height(t->left) > 1)
+    {
+        if(x > t->right->element)
+        {
+            t = rotateWithRightChild(t);
+        }
+        else
+        {
+            t = doubleWithRightChild(t);
+        }
+    }
+    
+    return t;
+}
+
+struct Tree* delete(int x,struct Tree* t)
+{
+    struct Tree* temp;
+    if(t==NULL)
+    {
+        printf("Element not found!\n");
+    }
+    else if(x<t->element)
+    {
+        t->left=delete(x,t->left);
+    }
+    else if(x>t->element)
+    {
+        t->right=delete(x,t->right);
+    }
+    else if(t->left&&t->right)//如果要删除的节点有两个子节点
+    {
+        temp=findMin(t->right);//找到右子树中最小的节点
+        t->element=temp->element;//将该节点的值赋给要删除的节点
+        t->right=delete(t->element,t->right);//删除右子树中最小的节点
+    }
+    else//如果要删除的节点只有一个子节点或者没有子节点
+    {
+        temp=t;
+        if(t->left==NULL)
+        {
+            t=t->right;
+        }
+        else if(t->right==NULL)
+        {
+            t=t->left;
+        }
+        free(temp);
+    }
+    return t;
+}
+
+//查找关键字x，如果找到则返回关键字节点的内存地址，否则返回NULL
+struct Tree* find(int x,struct Tree* t)
+{
+    if(t==NULL)
+    {
+        return NULL;
+    }
+    if(x<t->element)
+    {
+        return find(x,t->left);
+    }
+    else if(x>t->element)
+    {
+        return find(x,t->right);
+    }
+    else
+    {
+        return t;
+    }
+}
+struct Tree* findMin(struct Tree* t)
+{
+    if(t==NULL)
+    {
+        return NULL;
+    }
+    else if(t->left==NULL)
+    {
+        return t;
+    }
+    else
+    {
+        return findMin(t->left);
+    }
+}
+struct Tree* findMax(struct Tree* t)
+{
+    if(t==NULL)
+    {
+        return NULL;
+    }
+    else if(t->right==NULL)
+    {
+        return t;
+    }
+    else
+    {
+        return findMax(t->right);
+    }
+}
+
+
+void printTree(struct Tree* t)//中序递归输出树中元素
+{
+    //打印顺序：左子树->根节点->右子树
+    if(t==NULL)
+    {
+        printf("The tree is empty!\n");
+        return;
+    }
+    //打印左子树
+    if(t->left!=NULL)
+    {
+        printTree(t->left);
+    }
+    //输出根节点
+    printf("%d ",t->element);
+    //打印右子树
+    if(t->right!=NULL)
+    {
+        printTree(t->right);
+    }
+}
+struct Tree* rotateWithLeftChild(struct Tree* k2)//单旋转函数
+{
+    struct Tree* k1=k2->left;
+    k2->left=k1->right;
+    k1->right=k2;
+    return k1;
+}
+struct Tree* rotateWithRightChild(struct Tree* k1)//单旋转函数
+{
+    struct Tree* k2=k1->right;
+    k1->right=k2->left;
+    k2->left=k1;
+    return k2;
+}
+
+struct Tree* doubleWithLeftChild(struct Tree* k3)//双旋转函数
+{
+    k3->left=rotateWithRightChild(k3->left);
+    return rotateWithLeftChild(k3);
+}
+
+struct Tree* doubleWithRightChild(struct Tree* k1)//双旋转函数
+{
+    k1->right=rotateWithLeftChild(k1->right);
+    return rotateWithRightChild(k1);
+}
+
+int height(struct Tree* t)//计算树的高度
+{
+    if(t==NULL)
+    {
+        return -1;
+    }
+    else
+    {
+        return t->height;
+    }
+}
