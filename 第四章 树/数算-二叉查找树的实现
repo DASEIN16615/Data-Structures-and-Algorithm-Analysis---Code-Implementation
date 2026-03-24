@@ -54,14 +54,7 @@ int main()
     */
 
     printTree(root);
-    printf("------------------------------\n");
-
-    //查找关键字为k的节点
-    int k;
-    printf("Please input the key to be searched:\n");
-    scanf("%d",&k);
-    node=find(k,root);
-    printf("\nThe node with key %d is %d\n",k,node->element);
+    printf("\n");
     printf("------------------------------\n");
 
     //查找key最小的节点
@@ -72,6 +65,14 @@ int main()
     //查找key最大的节点
     max=findMax(root);
     printf("The maximum key is %d\n",max->element);
+    printf("------------------------------\n");
+
+    //查找关键字为k的节点
+    int k;
+    printf("Please input the key to be searched:\n");
+    scanf("%d",&k);
+    node=find(k,root);
+    printf("\nThe node with key %d is %d\n",k,node->element);
     printf("------------------------------\n");
 
     //删除节点
@@ -160,6 +161,7 @@ struct Tree* find(int x,struct Tree* t)
 {
     if(t==NULL)
     {
+        printf("Element found!\n");
         return NULL;
     }
     if(x<t->element)
@@ -172,6 +174,7 @@ struct Tree* find(int x,struct Tree* t)
     }
     else
     {
+        
         return t;
     }
 }
