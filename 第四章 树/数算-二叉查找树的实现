@@ -41,7 +41,7 @@ int main()
         }
         else
         {
-        insert(x,root);
+        root=insert(x,root);
         }
     }
     /*
@@ -76,7 +76,7 @@ int main()
     printf("------------------------------\n");
 
     //删除节点
-    makeEmpty(root);
+    root=makeEmpty(root);
     printTree(root);
 
     return 0;
