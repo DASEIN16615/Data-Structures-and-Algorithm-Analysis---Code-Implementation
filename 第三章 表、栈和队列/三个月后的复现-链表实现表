@@ -1,0 +1,220 @@
+//链表ADT函数的实现
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+struct Node* createHeaderNode();//创建表头
+void insertFirst(struct Node* header,int x);//从头部插入
+void insertLast(struct Node* header,int x);//从尾部插入
+struct Node* find(struct Node* header,int x);//查找-返回节点地址-传入元素
+struct Node* findKth(struct Node* header,int position);//查找-返回节点元素-传入节点序列号
+void delete1(struct Node* header,int x);//删除
+void delete2(struct Node* header,int x);//删除
+bool isEmpty(struct Node* header);//判断是否为空
+int size(struct Node* header);//统计节点个数
+void printList(struct Node* header);//打印链表
+
+struct Node
+{
+    int element;
+    struct Node* next;
+};
+
+int main(void)
+{
+    struct Node* node;
+    struct Node* header;
+
+    header=createHeaderNode();//创建表头
+    printf("List is Empty?  ");
+    if(isEmpty(header))
+        printf("yes\n");
+    else
+        printf("no\n");
+    printf("============================\n");
+
+    printf("请输入你要在表头插入的数据：\n");
+    int a,b,c,d,e,x,y;
+    scanf("%d%d",&a,&b);
+    insertFirst(header,a);//从表头插入数据
+    insertFirst(header,b);
+
+    printList(header);
+    printf("============================\n");
+
+    printf("请输入你要在表尾插入的数据：\n");
+    scanf("%d%d",&c,&d);
+    insertLast(header,c);
+    insertLast(header,d);
+
+    printList(header);
+    printf("============================\n");
+
+    printf("List is Empty?  ");
+    if(isEmpty(header))
+        printf("yes\n");
+    else
+        printf("no\n");
+    printf("============================\n");
+
+    printf("请输入你要查找的数据：\n");
+    scanf("%d",&e);
+    node=find(header,e);
+    if(node==NULL)
+        printf("not find\n");
+    else
+    printf("find node element:%d\n",node->element);
+    printf("============================\n");
+
+    printf("请输入你要查找的数据：\n");
+    scanf("%d",&x);
+    node=findKth(header,x);
+    if(node==NULL)
+        printf("not find\n");
+    else
+    printf("find node element:%d\n",node->element);
+    printf("============================\n");
+
+    printf("请输入你要删除的数据：\n");
+    scanf("%d",&y);
+    delete2(header,y);
+    printList(header);
+    printf("============================\n");
+
+    printf("List size:%d\n",size(header));
+    printf("============================\n");
+}
+
+struct Node* createHeaderNode()//创建表头
+{
+    struct Node* header;
+    header=(struct Node*)malloc(sizeof(struct Node));
+    header->next=NULL;
+    
+    return header;
+}
+
+void insertFirst(struct Node* header,int x)//从头部插入
+{
+        struct Node* p=(struct Node*)malloc(sizeof(struct Node));
+        p->next=header->next;
+        header->next=p;
+        p->element=x;
+}
+
+void insertLast(struct Node* header,int x)//从尾部插入
+{
+    struct Node* p=header;
+    while(p->next!=NULL)
+    {
+        p=p->next;
+    }
+    struct Node *tmp=(struct Node*)malloc(sizeof(struct Node));
+    tmp->element=x;
+    p->next=tmp;
+    tmp->next=NULL;
+}
+
+struct Node* find(struct Node* header,int x)//查找-返回节点地址-传入元素
+{
+    struct Node* p=header;
+    if(p->next==NULL)
+    {
+        printf("this list is empty!!");
+        return 0;
+    }
+
+    p=p->next;
+    while((p->element!=x)&&(p->next!=NULL))
+    {
+        p=p->next;
+    }
+    if((p->next==NULL)&&(p->element!=x))
+        return NULL;
+    if(p->element==x)    
+        return p;
+}
+
+struct Node* findKth(struct Node* header,int position)//传入节点序列号-查找-返回节点指针
+{
+    if(position==0)
+    {
+        printf("this list is empty!!");
+        return 0;
+    }
+    struct Node* p=header;
+    for(int i=0;i<position;i++)
+    {
+        if(p->next==NULL)
+            return NULL;
+        p=p->next;
+    }
+    return p;
+}
+
+void delete1(struct Node* header,int x)//尾删除
+{
+    struct Node* p=header;
+    if(p->next==NULL)
+    {
+        printf("this list is empty");
+        return;
+    }
+    p=p->next;
+    while(p->element!=x)
+    {
+        p=p->next;
+    }
+    p->element=p->next->element;
+    struct Node* temp=p->next->next;
+    free(p->next);
+    p->next=temp;
+}
+
+void delete2(struct Node* header, int x)
+{
+    struct Node* prev = header;
+
+    while (prev->next != NULL && prev->next->element != x)
+        prev = prev->next;
+
+    if (prev->next == NULL)
+        return;
+
+    struct Node* target = prev->next;
+    prev->next = target->next;
+    free(target);
+}
+
+
+bool isEmpty(struct Node* header)//判断是否为空
+{
+    if(header->next==NULL)
+        return true;
+    return false;
+}
+
+int size(struct Node* header)//统计节点个数
+{
+    struct Node* p=header;
+    int i=0;
+    while(p->next!=NULL)
+    {
+        p=p->next;
+        i++;
+    }
+    return i;
+}
+
+void printList(struct Node* header)//打印链表
+{
+    struct Node* p=header;
+    while(p->next!=NULL)
+    {
+        p=p->next;
+        printf("%d\n",p->element);
+        
+    }
+}
+
